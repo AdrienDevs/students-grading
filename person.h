@@ -20,6 +20,8 @@ public:
     const std::string& name()    const { return name_; }
     const std::string& surname() const { return surname_; }
 
+    bool parseLine(const std::string& line);    // "Name Surname hw1 hw2 ... exam"
+
     double finalAverage() const;                // 0.4 * average(hw) + 0.6 * exam
     double finalMedian()  const;                // 0.4 * median(hw)  + 0.6 * exam
 
