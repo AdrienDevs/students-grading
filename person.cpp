@@ -1,60 +1,55 @@
 #include "person.h"
 #include <algorithm>
 #include <iomanip>
+#include <numeric>
 
-Person::Person() : name_(), surname_(), hw_(nullptr), n_(0), exam_(0), final_(0.0) {}
+Person::Person() : name_(), surname_(), hw_(), exam_(0) {}
 
 Person::Person(const Person& o)
-    : name_(o.name_), surname_(o.surname_), hw_(nullptr), n_(o.n_),
-      exam_(o.exam_), final_(o.final_) {
-    if (n_ > 0) {
-        hw_ = new int[n_];
-        std::copy(o.hw_, o.hw_ + n_, hw_);      // deep copy
-    }
-}
+    : name_(o.name_), surname_(o.surname_), hw_(o.hw_), exam_(o.exam_) {}
 
 Person& Person::operator=(const Person& o) {
-    if (this == &o) return *this;               // self-assignment guard
-    int* newHw = nullptr;
-    if (o.n_ > 0) {
-        newHw = new int[o.n_];
-        std::copy(o.hw_, o.hw_ + o.n_, newHw);
+    if (this != &o) {
+        name_ = o.name_;
+        surname_ = o.surname_;
+        hw_ = o.hw_;
+        exam_ = o.exam_;
     }
-    delete[] hw_;                               // free old data only after the copy succeeded
-    hw_ = newHw;
-    n_ = o.n_;
-    name_ = o.name_;
-    surname_ = o.surname_;
-    exam_ = o.exam_;
-    final_ = o.final_;
     return *this;
 }
 
-Person::~Person() { delete[] hw_; }
+Person::~Person() {}
 
-void Person::calcFinalAverage() {
-    double sum = 0;
-    for (std::size_t i = 0; i < n_; ++i) sum += hw_[i];
-    double hwAvg = n_ ? sum / n_ : 0.0;
-    final_ = 0.4 * hwAvg + 0.6 * exam_;
+double Person::finalAverage() const {
+    double avg = hw_.empty() ? 0.0
+               : std::accumulate(hw_.begin(), hw_.end(), 0.0) / hw_.size();
+    return 0.4 * avg + 0.6 * exam_;
 }
 
+double Person::finalMedian() const {
+    if (hw_.empty()) return 0.6 * exam_;
+    std::vector<int> tmp(hw_);                  // sort a copy, keep original order
+    std::sort(tmp.begin(), tmp.end());
+    std::size_t n = tmp.size();
+    double med = (n % 2) ? tmp[n / 2] : (tmp[n / 2 - 1] + tmp[n / 2]) / 2.0;
+    return 0.4 * med + 0.6 * exam_;
+}
+
+// The user decides when the homework list ends (0 = finished).
 std::istream& operator>>(std::istream& in, Person& p) {
-    std::cout << "Name: ";                       in >> p.name_;
-    std::cout << "Surname: ";                    in >> p.surname_;
-    std::cout << "Number of homework results: "; in >> p.n_;
-    delete[] p.hw_;
-    p.hw_ = p.n_ ? new int[p.n_] : nullptr;
-    for (std::size_t i = 0; i < p.n_; ++i) {
-        std::cout << "HW" << i + 1 << ": ";
-        in >> p.hw_[i];
-    }
-    std::cout << "Exam: ";                       in >> p.exam_;
+    p.hw_.clear();
+    std::cout << "Name: ";    in >> p.name_;
+    std::cout << "Surname: "; in >> p.surname_;
+    std::cout << "Homework results (type 0 to finish): ";
+    int h;
+    while (in >> h && h != 0) p.hw_.push_back(h);
+    in.clear();
+    std::cout << "Exam: "; in >> p.exam_;
     return in;
 }
 
+// Prints name and surname only; main prints the numbers (it knows the chosen method).
 std::ostream& operator<<(std::ostream& out, const Person& p) {
-    out << std::left << std::setw(12) << p.name_ << std::setw(15) << p.surname_
-        << std::right << std::setw(18) << std::fixed << std::setprecision(2) << p.final_;
+    out << std::left << std::setw(14) << p.name_ << std::setw(16) << p.surname_;
     return out;
 }
