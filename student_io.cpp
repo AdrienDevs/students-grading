@@ -4,11 +4,12 @@
 #include <random>
 #include <stdexcept>
 
-Students readStudents(const std::string& path) {
+template <class Container>
+Container readStudents(const std::string& path) {
     std::ifstream f(path);
     if (!f) throw std::runtime_error("Cannot open file: " + path);
 
-    Students v;
+    Container v;
     std::string line;
     if (!std::getline(f, line)) throw std::runtime_error("File is empty: " + path);   // header line
 
@@ -27,7 +28,8 @@ Students readStudents(const std::string& path) {
     return v;
 }
 
-void writeStudents(const std::string& path, const Students& v) {
+template <class Container>
+void writeStudents(const std::string& path, const Container& v) {
     std::ofstream out(path);
     if (!out) throw std::runtime_error("Cannot create file: " + path);
 
@@ -45,6 +47,14 @@ void writeStudents(const std::string& path, const Students& v) {
     out << buf;
     if (!out) throw std::runtime_error("Write error: " + path);
 }
+
+// ---- explicit instantiations: the compiler generates the code for these three containers ----
+template StudentsVector readStudents<StudentsVector>(const std::string&);
+template StudentsList   readStudents<StudentsList>(const std::string&);
+template StudentsDeque  readStudents<StudentsDeque>(const std::string&);
+template void writeStudents<StudentsVector>(const std::string&, const StudentsVector&);
+template void writeStudents<StudentsList>(const std::string&, const StudentsList&);
+template void writeStudents<StudentsDeque>(const std::string&, const StudentsDeque&);
 
 void generateStudentFile(const std::string& path, std::size_t count, std::size_t hwCount) {
     std::ofstream out(path);

@@ -13,7 +13,7 @@ void showFile() {
     std::string path;
     std::cout << "File name: ";
     std::cin >> path;
-    Students s = readStudents(path);
+    Students s = readStudents<Students>(path);
     sortByName(s);
     printBoth(s);
 }
@@ -26,9 +26,16 @@ void generateAllFiles() {
     }
 }
 
+// The same file, the same steps, three different containers.
+void benchmarkFile(const std::string& path) {
+    printBenchRow(runPipeline<StudentsVector>(path, "vector"));
+    printBenchRow(runPipeline<StudentsList>(path, "list"));
+    printBenchRow(runPipeline<StudentsDeque>(path, "deque"));
+}
+
 void benchmarkAll() {
     printBenchHeader();
-    for (std::size_t n : testSizes()) printBenchRow(runPipeline(testFileName(n)));
+    for (std::size_t n : testSizes()) benchmarkFile(testFileName(n));
 }
 
 void benchmarkOne() {
@@ -36,7 +43,7 @@ void benchmarkOne() {
     std::cout << "File name: ";
     std::cin >> path;
     printBenchHeader();
-    printBenchRow(runPipeline(path));
+    benchmarkFile(path);
 }
 
 } // namespace
@@ -47,8 +54,8 @@ int main() {
                      "2 - generate random data (console)\n"
                      "3 - read a file and show the table\n"
                      "4 - generate the five random student files\n"
-                     "5 - speed test on the five generated files\n"
-                     "6 - speed test on one file\n"
+                     "5 - speed test (vector, list, deque) on the five generated files\n"
+                     "6 - speed test (vector, list, deque) on one file\n"
                      "0 - exit\nChoice: ";
         int choice;
         if (!(std::cin >> choice)) return 0;            // end of input / not a number
