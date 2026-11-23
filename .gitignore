@@ -1,1 +1,4 @@
 app
+random_students_*.txt
+*_failed.txt
+*_passed.txt
