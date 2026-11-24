@@ -9,11 +9,23 @@
 
 namespace {
 
-void showFile() {
+int askNumber(const std::string& question, int lo, int hi) {
+    std::cout << question;
+    int x;
+    if (!(std::cin >> x) || x < lo || x > hi)
+        throw std::invalid_argument("please enter a number from " + std::to_string(lo) + " to " + std::to_string(hi));
+    return x;
+}
+
+std::string askFile() {
     std::string path;
     std::cout << "File name: ";
     std::cin >> path;
-    Students s = readStudents<Students>(path);
+    return path;
+}
+
+void showFile() {
+    Students s = readStudents<Students>(askFile());
     sortByName(s);
     printBoth(s);
 }
@@ -26,24 +38,29 @@ void generateAllFiles() {
     }
 }
 
-// The same file, the same steps, three different containers.
-void benchmarkFile(const std::string& path) {
-    printBenchRow(runPipeline<StudentsVector>(path, "vector"));
-    printBenchRow(runPipeline<StudentsList>(path, "list"));
-    printBenchRow(runPipeline<StudentsDeque>(path, "deque"));
+void runOneCombination() {
+    int container = askNumber("Container (1 - vector, 2 - list, 3 - deque): ", 1, 3);
+    int strategy  = askNumber("Strategy (1 - copy to two new containers, 2 - move failed out of the base container): ", 1, 2);
+    int method    = (strategy == 1)
+        ? askNumber("Method (1 - loop, 2 - remove_copy_if): ", 1, 2)
+        : askNumber("Method (1 - loop with erase, 2 - partition, 3 - stable_partition): ", 1, 3);
+    std::string path = askFile();
+    printBenchHeader();
+    printBenchRow(runByContainerNumber(container, path, static_cast<Strategy>(strategy), static_cast<Method>(method)));
 }
 
-void benchmarkAll() {
+void benchmarkOneFile() {
+    std::string path = askFile();
     printBenchHeader();
-    for (std::size_t n : testSizes()) benchmarkFile(testFileName(n));
+    benchmarkEverything(path);
 }
 
-void benchmarkOne() {
-    std::string path;
-    std::cout << "File name: ";
-    std::cin >> path;
+void benchmarkAllFiles() {
     printBenchHeader();
-    benchmarkFile(path);
+    for (std::size_t n : testSizes()) {
+        benchmarkEverything(testFileName(n));
+        std::cout << '\n';
+    }
 }
 
 } // namespace
@@ -54,8 +71,9 @@ int main() {
                      "2 - generate random data (console)\n"
                      "3 - read a file and show the table\n"
                      "4 - generate the five random student files\n"
-                     "5 - speed test (vector, list, deque) on the five generated files\n"
-                     "6 - speed test (vector, list, deque) on one file\n"
+                     "5 - run ONE combination (container, strategy, method)\n"
+                     "6 - compare EVERYTHING on one file\n"
+                     "7 - compare EVERYTHING on the five generated files\n"
                      "0 - exit\nChoice: ";
         int choice;
         if (!(std::cin >> choice)) return 0;            // end of input / not a number
@@ -72,10 +90,11 @@ int main() {
                 printAvgOrMed(s, c == 'm' || c == 'M');
                 break;
             }
-            case 3: showFile();         break;
-            case 4: generateAllFiles(); break;
-            case 5: benchmarkAll();     break;
-            case 6: benchmarkOne();     break;
+            case 3: showFile();           break;
+            case 4: generateAllFiles();   break;
+            case 5: runOneCombination();  break;
+            case 6: benchmarkOneFile();   break;
+            case 7: benchmarkAllFiles();  break;
             default: std::cout << "Unknown choice\n";
             }
         } catch (const std::exception& e) {             // one place that reports every error
