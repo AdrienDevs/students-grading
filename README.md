@@ -89,6 +89,5 @@ Times are in seconds.
 | 1 000 000 | | | | | |
 | 10 000 000 | | | | | |
 
-### Conclusions
 
-<2-4 sentences about what you observed.>
+
