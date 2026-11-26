@@ -75,19 +75,7 @@ Name1 Surname1 3 7 4 8
 Note: the generated data files are not stored in this repository (they are
 too large). Use menu option 4 to create them.
 
-## Speed analysis (v0.2, std::vector)
 
-Test computer: <CPU>, <RAM> GB RAM, <SSD/HDD>, <operating system>.
-Compiler: g++ <version>, flags `-std=c++17 -O2`.
-Times are in seconds.
-
-| Records | Read | Sort | Split | Write | Total |
-|---------|------|------|-------|-------|-------|
-| 1 000 | | | | | |
-| 10 000 | | | | | |
-| 100 000 | | | | | |
-| 1 000 000 | | | | | |
-| 10 000 000 | | | | | |
 
 
 
